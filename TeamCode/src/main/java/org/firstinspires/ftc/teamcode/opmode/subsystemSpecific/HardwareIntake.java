@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.common.RobotHardware;
 import org.firstinspires.ftc.teamcode.common.util.CommandOpModeEx;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 
-@TeleOp(group = "subsystem")
+@TeleOp(group = "B-Subsystem")
 public class HardwareIntake extends OpMode {
     private Intake intake;
     private GamepadEx gamepadEx;

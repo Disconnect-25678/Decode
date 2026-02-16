@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode.opmode.hardwareutil;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
-@TeleOp(group = "Hardware")
+@Disabled
+@TeleOp(group = "C-Hardware")
 public class HardwareDualServo extends OpMode {
     private Servo servo;
     private Servo servo2;

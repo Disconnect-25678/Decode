@@ -84,10 +84,6 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
                         omegaRotation
                 )
         );
-
-        telemetry.addData("Drive velo x: ", velocityX);
-        telemetry.addData("Drive velo y: ", velocityY);
-        telemetry.addData("Drive omega rotation: ", omegaRotation);
     }
 
     public void setState(DriveState state) {
@@ -119,7 +115,7 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
 
     private double calculateHeadingPID() {
         double error = (targetHeading.getDegrees() - heading.getDegrees() + 180) % 360 - 180;
-        return headingPIDController.calculate(heading.getDegrees(), heading.getDegrees() + error);
+        return headingPIDController.calculate(targetHeading.getDegrees() - error, targetHeading.getDegrees());
     }
 
     private void setMecanumValues(double[] vals) {

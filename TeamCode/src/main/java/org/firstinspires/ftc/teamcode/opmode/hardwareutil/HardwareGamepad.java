@@ -1,35 +1,25 @@
 package org.firstinspires.ftc.teamcode.opmode.hardwareutil;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.AnalogSensor;
 
-@Config
 @TeleOp(group = "C-Hardware")
-public class HardwareAnalogInput extends OpMode {
-    public static String name = "Turret Encoder";
-
-    private AnalogInput sensor;
-
+public class HardwareGamepad extends OpMode {
     @Override
     public void init() {
         this.telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-
-        sensor = hardwareMap.get(AnalogInput.class, name);
     }
 
     @Override
     public void init_loop() {
-        telemetry.addData("str: ", name);
+        this.telemetry.addLine("Ready");
     }
 
     @Override
     public void loop() {
-        telemetry.addData("sensor voltage: ", sensor.getVoltage());
-        telemetry.addData("max voltage: ", sensor.getMaxVoltage());
+        telemetry.addLine("Left x: " + gamepad1.left_stick_x + " | y: " + gamepad1.left_stick_y);
+        telemetry.addLine("Right x: " + gamepad1.right_stick_x + " | y: " + gamepad1.right_stick_y);
     }
 }

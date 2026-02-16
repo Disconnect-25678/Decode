@@ -62,6 +62,12 @@ abstract public class TeleOp extends CommandOpModeEx {
     }
 
     @Override
+    public void initialize_loop() {
+        telemetry.addLine("Ready");
+        telemetry.update();
+    }
+
+    @Override
     public void run() {
         super.run();
     }

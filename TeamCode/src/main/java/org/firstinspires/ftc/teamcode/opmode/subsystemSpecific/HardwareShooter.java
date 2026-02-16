@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.shooter.Shooter;
 
 @Config
-@TeleOp(group = "subsystem")
+@TeleOp(group = "B-Subsystem")
 public class HardwareShooter extends OpMode {
     public static double targetHood = 25;
     public static double targetSpeed = 2000;

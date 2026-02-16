@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.common.RobotHardware;
 import org.firstinspires.ftc.teamcode.subsystem.Superstructure;
 import org.firstinspires.ftc.teamcode.subsystem.drive.Drivetrain;
 
-@TeleOp(group = "subsystem")
+@TeleOp(group = "B-Subsystem")
 public class HardwareDrivetrain extends OpMode {
     private Drivetrain drivetrain;
     private GamepadEx gamepadEx;

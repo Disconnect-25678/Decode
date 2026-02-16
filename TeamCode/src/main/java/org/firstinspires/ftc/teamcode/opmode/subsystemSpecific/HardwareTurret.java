@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.shooter.Turret;
 
 @Config
-@TeleOp(group = "subsystem")
+@TeleOp(group = "B-Subsystem")
 public class HardwareTurret extends OpMode {
     public static double posA = 0;
     public static double posB = 180;

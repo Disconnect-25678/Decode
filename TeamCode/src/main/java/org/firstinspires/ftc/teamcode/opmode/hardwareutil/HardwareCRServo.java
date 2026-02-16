@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
-@TeleOp(group = "Hardware")
+@TeleOp(group = "C-Hardware")
 public class HardwareCRServo extends OpMode {
     private CRServo servo;
     public static double power = 0;

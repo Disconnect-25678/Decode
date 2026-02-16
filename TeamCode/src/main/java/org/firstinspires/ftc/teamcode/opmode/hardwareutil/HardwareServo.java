@@ -8,12 +8,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
-@TeleOp(group = "Hardware")
+@TeleOp(group = "C-Hardware")
 public class HardwareServo extends OpMode {
     private Servo servo;
     public static double pos = 0;
     public static Servo.Direction DIRECTION = Servo.Direction.FORWARD;
-    public static String str = "Caw Servo";
+    public static String str = "Hood";
 
     @Override
     public void init() {

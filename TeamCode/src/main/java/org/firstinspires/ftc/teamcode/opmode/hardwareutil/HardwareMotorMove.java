@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Config
-@TeleOp(group = "Hardware")
+@TeleOp(group = "C-Hardware")
 public class HardwareMotorMove extends OpMode {
 
     private DcMotorEx motor;
@@ -19,7 +19,7 @@ public class HardwareMotorMove extends OpMode {
 
     public static double power = 0;
 
-    public static String name = "Lift Left";
+    public static String name = "Intake";
 
     @Override
     public void init() {

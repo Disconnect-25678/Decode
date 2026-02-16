@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Config
-@TeleOp(group = "Hardware")
+@TeleOp(group = "C-Hardware")
 public class HardwareMotor extends OpMode {
 
     private DcMotorEx motor;
@@ -18,7 +18,7 @@ public class HardwareMotor extends OpMode {
     public static DcMotorSimple.Direction DIRECTION = DcMotorSimple.Direction.FORWARD;
 
 
-    public static String name = "Lift Left";
+    public static String name = "Turret";
 
     @Override
     public void init() {
