@@ -6,8 +6,8 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.teamcode.common.util.MotorWrapper;
 
 public class Intake extends SubsystemBase {
-    public static double kIntakeSpeed = 0.5;
-    public static double kIdleSpeed = 0.2;
+    public static double kIntakeSpeed = 0.7;
+    public static double kIdleSpeed = 0.5;
     public static double kReverseSpeed = 0.2;
 
     private MotorWrapper intakeMotor;

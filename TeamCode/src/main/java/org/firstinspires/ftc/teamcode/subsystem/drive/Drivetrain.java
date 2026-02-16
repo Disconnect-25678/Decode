@@ -20,12 +20,12 @@ import org.firstinspires.ftc.teamcode.subsystem.Superstructure;
 @Config
 public class Drivetrain extends SubsystemBase implements DrivetrainIO{
     public static double kRotationPIDResidualThreshold = 1;
-    public static double kDrivingDeadband = 0.1;;
+    public static double kDrivingDeadband = 0.05;
 
     public static double kMaxDriveSpeed = 0.96;
     public static double kMaxRotationSpeed = 0.5;
 
-    public static double kP = 1;
+    public static double kP = 0.0175;
     public static double kI = 0;
     public static double kD = 0;
 
@@ -80,10 +80,14 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
         omegaRotation *= kMaxRotationSpeed;
         this.setMecanumValues(
                 Algorithms.returnMecanumValues(
-                        Algorithms.mapJoystick(velocityX, velocityY).rotateBy(heading.getDegrees()),
+                        Algorithms.mapJoystick(velocityX, velocityY).rotateBy(-heading.getDegrees()),
                         omegaRotation
                 )
         );
+
+        telemetry.addData("Drive velo x: ", velocityX);
+        telemetry.addData("Drive velo y: ", velocityY);
+        telemetry.addData("Drive omega rotation: ", omegaRotation);
     }
 
     public void setState(DriveState state) {
@@ -95,7 +99,7 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
     }
 
     public Rotation2d getHeading() {
-        return new Rotation2d();
+        return heading;
     }
 
     public void seedHeading() {
@@ -115,7 +119,7 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
 
     private double calculateHeadingPID() {
         double error = (targetHeading.getDegrees() - heading.getDegrees() + 180) % 360 - 180;
-        return headingPIDController.calculate(targetHeading.getDegrees(), error);
+        return headingPIDController.calculate(heading.getDegrees(), heading.getDegrees() + error);
     }
 
     private void setMecanumValues(double[] vals) {
@@ -141,6 +145,7 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
                 break;
             case DRIVE_FACING_ANGLE:
                 if (Math.abs(controller.getRightX()) >= kDrivingDeadband) this.setState(DriveState.DRIVE);
+                break;
         }
     }
 
@@ -156,13 +161,13 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
         updateDriveState();
         switch (state) {
             case DRIVE:
-                this.setDriveSpeeds(controller.getLeftX(), -controller.getLeftY(), controller.getRightX());
+                this.setDriveSpeeds(controller.getLeftX(), controller.getLeftY(), controller.getRightX());
                 break;
             case DRIVE_FACING_ANGLE:
-                this.setDriveSpeeds(controller.getLeftX(), -controller.getLeftY(), this.calculateHeadingPID());
+                this.setDriveSpeeds(controller.getLeftX(), controller.getLeftY(), -this.calculateHeadingPID());
                 break;
             case DRIVE_RESIDUAL:
-                this.setDriveSpeeds(controller.getLeftX(), -controller.getLeftY(), 0);
+                this.setDriveSpeeds(controller.getLeftX(), controller.getLeftY(), 0);
                 break;
         }
 
@@ -170,5 +175,8 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
         telemetry.addData("Drive x: ", pose.getX());
         telemetry.addData("Drive y: ", pose.getY());
         telemetry.addData("Drive theta: ", pose.getRotation().getDegrees());
+        telemetry.addData("Drive heading (for driving only): ", heading.getDegrees());
+        telemetry.addData("Drive heading offset: ", headingOffset.getDegrees());
+        telemetry.addData("Drive target heading: ", targetHeading.getDegrees());
     }
 }

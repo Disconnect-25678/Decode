@@ -14,16 +14,24 @@ public class Index extends SubsystemBase {
         super();
         this.servo = servo;
     }
+//    public void startIndex() {
+//        servo.setPower(kIndexShootSpeed);
+//    }
+//
+//    public void stopIndex() {
+//        servo.setPower(0);
+//    }
+//
+//    public void reverseIndex() {
+//        servo.setPower(kReverseSpeed);
+//    }
 
     public void startIndex() {
-        servo.setPower(kIndexShootSpeed);
     }
 
     public void stopIndex() {
-        servo.setPower(0);
     }
 
     public void reverseIndex() {
-        servo.setPower(kReverseSpeed);
     }
 }

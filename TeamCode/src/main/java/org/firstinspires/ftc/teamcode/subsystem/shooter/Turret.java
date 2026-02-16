@@ -16,10 +16,10 @@ import org.firstinspires.ftc.teamcode.common.util.MotorWrapper;
 @Config
 public class Turret extends SubsystemBase {
     public static double minAngle = -90;
-    public static double maxAngle = 225;
+    public static double maxAngle = 295.84702679;
 
     public static int minMotorPosition = 0;
-    public static int maxMotorPosition = 32;
+    public static int maxMotorPosition = 918;
 
     public static double kTolerance = 50;
 
@@ -33,7 +33,7 @@ public class Turret extends SubsystemBase {
     private Telemetry telemetry;
 
     private double targetPosition;
-    private Rotation2d targetAngle;
+    private Rotation2d targetAngle = new Rotation2d();
     private double targetRelativeAngle;
 
     private double motorPosition;

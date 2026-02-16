@@ -40,7 +40,7 @@ public class RobotHardware {
 //     */
     public RobotHardware initialize(HardwareMap hardwareMap) {
         this.initializeDrivetrain(hardwareMap);
-        this.initializeIndex(hardwareMap);
+//        this.initializeIndex(hardwareMap);
         this.initializeIntake(hardwareMap);
         this.initializeShooter(hardwareMap);
         this.initializeTurret(hardwareMap);
@@ -67,10 +67,12 @@ public class RobotHardware {
 
         odometry = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
 
-        odometry.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odometry.setOffsets(-93.03423, 152.768, DistanceUnit.MM);
 
-        odometry.setOffsets(6.007, -3.663, DistanceUnit.INCH);
+        odometry.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        odometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
+                GoBildaPinpointDriver.EncoderDirection.REVERSED);
+
         odometry.resetPosAndIMU();
 
 //        imu = hardwareMap.get(IMU.class, "imu");
@@ -90,7 +92,7 @@ public class RobotHardware {
         intakeMotor = new MotorWrapper(hardwareMap.get(DcMotorEx.class, "Intake"));
         intakeMotor.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intakeMotor.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        intakeMotor.motor.setDirection(DcMotorSimple.Direction.FORWARD);
+        intakeMotor.motor.setDirection(DcMotorSimple.Direction.REVERSE);
         return this;
     }
 
@@ -106,8 +108,8 @@ public class RobotHardware {
         shooterMotors[0].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterMotors[1].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        shooterMotors[0].motor.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooterMotors[1].motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooterMotors[0].motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooterMotors[1].motor.setDirection(DcMotorSimple.Direction.FORWARD);
 
         this.hoodServo = hardwareMap.get(Servo.class, "Hood");
         hoodServo.setDirection(Servo.Direction.FORWARD);

@@ -28,6 +28,8 @@ abstract public class TeleOp extends CommandOpModeEx {
 
         joystick = new GamepadEx(gamepad1);
 
+        RobotHardware.getInstance().initialize(hardwareMap);
+
         Superstructure.instance = new Superstructure(hardwareMap, telemetry, joystick, color);
 
         robot = Superstructure.instance;
@@ -42,21 +44,21 @@ abstract public class TeleOp extends CommandOpModeEx {
                 .whenInactive(() -> robot.setState(Superstructure.RobotState.TRACKING));
 
         joystick.getGamepadButton(GamepadKeys.Button.Y)
-                .whenActive(robot::resetRobotHeading);
+                .whenPressed(robot::resetRobotHeading);
 
         joystick.getGamepadButton(GamepadKeys.Button.X)
-                .whenActive(robot::resetOdometry);
+                .whenPressed(robot::resetOdometry);
 
         joystick.getGamepadButton(GamepadKeys.Button.B)
-                .whenActive(() -> robot.setState(Superstructure.RobotState.STOP));
+                .whenPressed(() -> robot.setState(Superstructure.RobotState.STOP));
 
         joystick.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
-                .whenActive(robot::enableReverse)
-                .whenInactive(robot::disableReverse);
+                .whenPressed(robot::enableReverse)
+                .whenReleased(robot::disableReverse);
 
         joystick.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
-                .whenActive(robot::setFenderShot)
-                .whenInactive(() -> robot.setState(Superstructure.RobotState.IDLE));
+                .whenPressed(robot::setFenderShot)
+                .whenReleased(() -> robot.setState(Superstructure.RobotState.IDLE));
     }
 
     @Override

@@ -21,6 +21,8 @@
  */
 package org.firstinspires.ftc.teamcode.opmode.hardwareutil;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -41,13 +43,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
  * See the sensor's product page: https://www.gobilda.com/pinpoint-odometry-computer-imu-sensor-fusion-for-2-wheel-odometry/
  */
 @TeleOp(group = "Hardware")
-@Disabled
 public class HardwareOdometry extends OpMode {
     // Create an instance of the sensor
     GoBildaPinpointDriver pinpoint;
 
     @Override
     public void init() {
+        this.telemetry = new MultipleTelemetry(FtcDashboard.getInstance().getTelemetry(), this.telemetry);
         // Get a reference to the sensor
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
 
@@ -100,8 +102,8 @@ public class HardwareOdometry extends OpMode {
          * increase when you move the robot forward. And the Y (strafe) pod should increase when
          * you move the robot to the left.
          */
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
+                GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
         /*
          * Before running the robot, recalibrate the IMU. This needs to happen when the robot is stationary

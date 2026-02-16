@@ -103,7 +103,11 @@ public class Superstructure extends SubsystemBase {
                 this.telemetry
         );
 
-
+        turret = new Turret(
+                RobotHardware.getInstance().turretMotor,
+                RobotHardware.getInstance().turretEncoder,
+                this.telemetry
+        );
     }
 
     public void enableReverse() {
@@ -142,6 +146,7 @@ public class Superstructure extends SubsystemBase {
                 break;
             case MANUAL_STAGING:
                 turret.setTurretAngle(Rotation2d.fromDegrees(0));
+                shooter.setShotParameter(manualShot);
             case SHOOT_STAGING:
                 stopShooting();
                 intake.idle();

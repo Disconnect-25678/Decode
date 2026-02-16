@@ -27,14 +27,14 @@ public class Shooter extends SubsystemBase {
     public static Rotation2d minAngle = new Rotation2d(10);
 
     public static double tMinServoRange = 0;
-    public static double tMaxServoRange = 1;
+    public static double tMaxServoRange = 0.45;
 
     private Servo hoodServo;
     private MotorWrapper[] shooterMotors;
 
     private Telemetry telemetry;
 
-    private PIDController velocityController;
+    private PIDController velocityController = new PIDController(kP, kI, kD);
 
     private double rpmTarget = 0;
     private Rotation2d hoodTarget = minAngle;

@@ -5,7 +5,9 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.common.RobotHardware;
 import org.firstinspires.ftc.teamcode.subsystem.Superstructure;
@@ -32,6 +34,7 @@ public class HardwareDrivetrain extends OpMode {
     @Override
     public void loop() {
         drivetrain.periodic();
+        if (gamepad1.y) drivetrain.seedHeading();
     }
 
     @Override
