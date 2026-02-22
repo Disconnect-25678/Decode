@@ -40,7 +40,7 @@ public class RobotHardware {
 //     */
     public RobotHardware initialize(HardwareMap hardwareMap) {
         this.initializeDrivetrain(hardwareMap);
-//        this.initializeIndex(hardwareMap);
+        this.initializeIndex(hardwareMap);
         this.initializeIntake(hardwareMap);
         this.initializeShooter(hardwareMap);
         this.initializeTurret(hardwareMap);
@@ -113,7 +113,6 @@ public class RobotHardware {
 
         this.hoodServo = hardwareMap.get(Servo.class, "Hood");
         hoodServo.setDirection(Servo.Direction.FORWARD);
-        hoodServo.scaleRange(Shooter.tMinServoRange, Shooter.tMaxServoRange);
 
         return this;
     }

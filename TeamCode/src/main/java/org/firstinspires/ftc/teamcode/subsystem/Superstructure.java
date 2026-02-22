@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.geometry.Pose2d;
@@ -19,20 +20,27 @@ import org.firstinspires.ftc.teamcode.subsystem.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.shooter.ShotParameter;
 import org.firstinspires.ftc.teamcode.subsystem.shooter.Turret;
 
+import java.util.concurrent.TimeUnit;
+
 @Config
 public class Superstructure extends SubsystemBase {
     public static Superstructure instance = null;
 
     public static final Translation2d shooterOffset = new Translation2d(1.794, 0);
 
-    public static final Pose2d kBlueTargetPose = new Pose2d();
-    public static final Pose2d kRedTargetPose = new Pose2d();
+    public static final Pose2d kBlueTargetPose = new Pose2d(0, 144, new Rotation2d());
+    public static final Pose2d kRedTargetPose = new Pose2d(144, 144, new Rotation2d());
 
     public static final Pose2d kBlueSeedPose = new Pose2d();
     public static final Pose2d kRedSeedPose = new Pose2d();
 
     public static double fenderShotAngle = 20;
-    public static double fenderShotRPM = 2000;
+    public static double fenderShotRPM = 4500;
+
+    public static int msShootWaitTime = 100;
+    public static int msPulseTime = 100;
+
+    private ElapsedTime timer = new ElapsedTime();
 
     public enum RobotState {
         TRACKING, // hood tracking, turret tracking
@@ -44,6 +52,7 @@ public class Superstructure extends SubsystemBase {
         MANUAL_SHOOTING, //shooting from in front of hub, flywheels spinning, turret at set angle, hood at set angle
 
         CLIMBING, //stow mechs, might need substates later
+        PULSE,
         IDLE, //mechanisms all idle (on disable maybe?)
         STOP
     }
@@ -75,7 +84,6 @@ public class Superstructure extends SubsystemBase {
         this(
                 hardwareMap,
                 telemetry,
-                gamepadEx,
                 allianceColor,
                 new Drivetrain(
                     RobotHardware.getInstance().driveMotors,
@@ -87,8 +95,8 @@ public class Superstructure extends SubsystemBase {
         );
     }
 
-    public Superstructure(HardwareMap hardwareMap, Telemetry telemetry, GamepadEx gamepadEx, AllianceColor allianceColor, DrivetrainIO drivetrain) {
-        RobotHardware.getInstance().initialize(hardwareMap);
+    public Superstructure(HardwareMap hardwareMap, Telemetry telemetry, AllianceColor allianceColor, DrivetrainIO drivetrain) {
+//        RobotHardware.getInstance().initialize(hardwareMap);
 
         this.telemetry = telemetry;
 
@@ -108,6 +116,11 @@ public class Superstructure extends SubsystemBase {
                 RobotHardware.getInstance().turretEncoder,
                 this.telemetry
         );
+    }
+
+    public void pulse() {
+        this.lastTrackedState = this.state;
+        this.setState(RobotState.PULSE);
     }
 
     public void enableReverse() {
@@ -150,11 +163,16 @@ public class Superstructure extends SubsystemBase {
             case SHOOT_STAGING:
                 stopShooting();
                 intake.idle();
+                timer.reset();
                 break;
             case REVERSE:
                 shooter.reverseShooter();
                 index.reverseIndex();
                 intake.reverseIntake();
+                break;
+            case PULSE:
+                timer.reset();
+                index.pulseIndex();
                 break;
         }
     }
@@ -186,6 +204,8 @@ public class Superstructure extends SubsystemBase {
             // if we dont want hood n shooter moving when reversing
             case IDLE:
                 break;
+            case PULSE:
+                break;
             case MANUAL_SHOOTING:
             case MANUAL_STAGING:
                 break;
@@ -213,6 +233,7 @@ public class Superstructure extends SubsystemBase {
         telemetry.addData("Distance to target: ", distanceToTarget);
         telemetry.addData("Auto aim target angle: ", targetShot.getHoodAngle().getDegrees());
         telemetry.addData("Auto aim target rpm: ", targetShot.getRPM());
+        telemetry.addData("Timer time: ", timer.time(TimeUnit.MILLISECONDS));
     }
 
     private void updateState() {
@@ -229,6 +250,10 @@ public class Superstructure extends SubsystemBase {
                     state = RobotState.SHOOTING;
                 }
                 break;
+            case PULSE:
+                if (timer.time(TimeUnit.MILLISECONDS) > msPulseTime)
+                    this.setState(lastTrackedState);
+                break;
         }
     }
 
@@ -242,7 +267,8 @@ public class Superstructure extends SubsystemBase {
     }
 
     public boolean atTargets() {
-        return shooter.atShooterSpeed() && shooter.atHoodAngle() && turret.atTurretAngle();
+//        return shooter.atShooterSpeed() && shooter.atHoodAngle() && turret.atTurretAngle();
+        return timer.time(TimeUnit.MILLISECONDS) > msShootWaitTime;
     }
 
     public void startIntake() {
@@ -272,6 +298,10 @@ public class Superstructure extends SubsystemBase {
 
     public void setFenderShot() {
         this.setManualShot(new ShotParameter(fenderShotAngle, fenderShotRPM));
+    }
+
+    public double getTurretRotorPosition() {
+        return this.turret.getTurretRotorPosition();
     }
     //imma steal 3006 code
 }

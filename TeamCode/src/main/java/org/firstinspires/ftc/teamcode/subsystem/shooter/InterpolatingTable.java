@@ -18,7 +18,16 @@ public class InterpolatingTable {
                     Map.ofEntries(
                             entry(
                                     Double.valueOf(2),
-                                    new ShotParameter(32, 32))
+                                    new ShotParameter(10, 4500)),
+                            entry(
+                                    Double.valueOf(100),
+                                    new ShotParameter(20, 4500)),
+                            entry(
+                                    Double.valueOf(150),
+                                    new ShotParameter(32, 4500)),
+                            entry(
+                                    Double.valueOf(200),
+                                    new ShotParameter(45, 4500))
                     ));
 
     public static ShotParameter get(double distanceToTarget) {

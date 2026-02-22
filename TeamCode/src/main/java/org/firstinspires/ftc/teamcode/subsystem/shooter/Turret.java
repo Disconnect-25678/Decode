@@ -95,6 +95,10 @@ public class Turret extends SubsystemBase {
         return this.atTurretAngle;
     }
 
+    public double getTurretRotorPosition() {
+        return this.motorPosition;
+    }
+
     private double angleToMotorPosition(double angleDegrees) {
         return (((maxMotorPosition - minMotorPosition) / (maxAngle - minAngle)) * (angleDegrees - minAngle)) + minMotorPosition;
     }

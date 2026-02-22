@@ -53,6 +53,9 @@ abstract public class TeleOp extends CommandOpModeEx {
                 .whenPressed(() -> robot.setState(Superstructure.RobotState.STOP));
 
         joystick.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
+                .whenPressed(robot::pulse);
+
+        joystick.getGamepadButton(GamepadKeys.Button.A)
                 .whenPressed(robot::enableReverse)
                 .whenReleased(robot::disableReverse);
 
@@ -70,5 +73,11 @@ abstract public class TeleOp extends CommandOpModeEx {
     @Override
     public void run() {
         super.run();
+    }
+
+    @Override
+    public void end() {
+        this.robot = null;
+        Superstructure.instance = null;
     }
 }

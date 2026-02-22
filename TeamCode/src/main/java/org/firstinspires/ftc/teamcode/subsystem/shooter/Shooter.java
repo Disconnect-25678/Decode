@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.geometry.Rotation2d;
+import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -16,15 +17,15 @@ public class Shooter extends SubsystemBase {
     public static double kI = 0;
     public static double kD = 0;
 
-    public static double kF = 0;
+    public static double kF = 1;
 
     public static double sMaxRPM = 6000;
     public static double sReverseRPM = -900;
 
     public static double sShooterTolerance = 30;
 
-    public static Rotation2d maxAngle = new Rotation2d(45);
-    public static Rotation2d minAngle = new Rotation2d(10);
+    public static Rotation2d maxAngle = Rotation2d.fromDegrees(45);
+    public static Rotation2d minAngle = Rotation2d.fromDegrees(10);
 
     public static double tMinServoRange = 0;
     public static double tMaxServoRange = 0.45;
@@ -40,6 +41,8 @@ public class Shooter extends SubsystemBase {
     private Rotation2d hoodTarget = minAngle;
 
     private boolean atShooterTarget = false;
+
+    private double targetHoodPos;
 
     public Shooter(
             MotorWrapper[] shooterMotors,
@@ -63,9 +66,16 @@ public class Shooter extends SubsystemBase {
     public void setHoodAngle(Rotation2d angle) {
         this.hoodTarget = angle;
 
-        this.hoodServo.setPosition(
-                (hoodTarget.getDegrees() - minAngle.getDegrees()) / (maxAngle.getDegrees() - minAngle.getDegrees())
+        this.setHoodPosition(
+                this.angleToPosition(angle)
         );
+    }
+
+    private void setHoodPosition(double pos) {
+        this.hoodServo.setPosition(
+                MathUtils.clamp(pos, tMinServoRange, tMaxServoRange)
+        );
+        this.targetHoodPos = pos;
     }
 
     public boolean atShooterSpeed() {
@@ -82,6 +92,10 @@ public class Shooter extends SubsystemBase {
 
     private void setShooterDutyCycle(double dutyCycle) {
         for (MotorWrapper motor : shooterMotors) motor.setPower(dutyCycle);
+    }
+
+    private double angleToPosition(Rotation2d angle) {
+        return ((tMaxServoRange - tMinServoRange) / (maxAngle.getDegrees() - minAngle.getDegrees())) * (angle.getDegrees() - minAngle.getDegrees()) + tMinServoRange;
     }
 
     @Override
@@ -105,5 +119,6 @@ public class Shooter extends SubsystemBase {
         telemetry.addData("Shooter at target: ", this.atShooterTarget);
         telemetry.addData("Shooter target velo: ", this.rpmTarget);
         telemetry.addData("Shooter target hood: ", this.hoodTarget.getDegrees());
+        telemetry.addData("Shooter hood pos: ", this.targetHoodPos);
     }
 }
