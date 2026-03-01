@@ -29,22 +29,33 @@ public class Superstructure extends SubsystemBase {
     public static final Translation2d shooterOffset = new Translation2d(1.794, 0);
 
     public static final Pose2d kBlueTargetPose = new Pose2d(0, 144, new Rotation2d());
-    public static final Pose2d kRedTargetPose = new Pose2d(144, 144, new Rotation2d());
+    public static final Pose2d kRedTargetPose = new Pose2d(144, 141.5, new Rotation2d());
 
-    public static final Pose2d kBlueSeedPose = new Pose2d();
-    public static final Pose2d kRedSeedPose = new Pose2d();
+    public Pose2d targetPose;
+
+    public static final Pose2d kSeedPose = new Pose2d(9.96319, 7.809055 + 1.25, new Rotation2d());
+
+    public static final Pose2d kRedSeedPose = kSeedPose;
+    public static final Pose2d kBlueSeedPose = new Pose2d(141.5 - kSeedPose.getX(), kSeedPose.getY(), Rotation2d.fromDegrees(180));
+//    public static final Pose2d kBlueSeedPose = new Pose2d(24 - 3.795, 120, new Rotation2d());
+//    public static final Pose2d kRedSeedPose = new Pose2d(141.5 - kBlueSeedPose.getX(), kBlueSeedPose.getY(), Rotation2d.fromDegrees(180));
 
     public static double fenderShotAngle = 20;
     public static double fenderShotRPM = 4500;
 
-    public static int msShootWaitTime = 100;
+    //-3.759
+
+    public static int msShootWaitTime = 300;
     public static int msPulseTime = 100;
 
     private ElapsedTime timer = new ElapsedTime();
+    private Pose2d seedPose = null;
 
     public enum RobotState {
         TRACKING, // hood tracking, turret tracking
         REVERSE,
+        TUNING_SHOOT_STAGING,
+        TUNING_SHOOTING,
         SHOOT_STAGING, //flywheel spin up, hood tracking, turret tracking
         SHOOTING, //index spinning, flywheels spinning, hood tracking, turret tracking,
         MANUAL_STAGING,
@@ -116,6 +127,15 @@ public class Superstructure extends SubsystemBase {
                 RobotHardware.getInstance().turretEncoder,
                 this.telemetry
         );
+
+        if (allianceColor == AllianceColor.RED) {
+            targetPose = kRedTargetPose;
+            seedPose = kRedSeedPose;
+        }
+        else {
+            targetPose = kBlueTargetPose;
+            seedPose = kBlueSeedPose;
+        }
     }
 
     public void pulse() {
@@ -137,6 +157,8 @@ public class Superstructure extends SubsystemBase {
             case MANUAL_SHOOTING:
             case MANUAL_STAGING:
             case IDLE: tempState = RobotState.IDLE; break;
+            case TUNING_SHOOTING:
+            case TUNING_SHOOT_STAGING:
             case SHOOTING:
             case SHOOT_STAGING:
             case TRACKING: tempState = RobotState.TRACKING; break;
@@ -159,6 +181,7 @@ public class Superstructure extends SubsystemBase {
                 break;
             case MANUAL_STAGING:
                 turret.setTurretAngle(Rotation2d.fromDegrees(0));
+            case TUNING_SHOOT_STAGING:
                 shooter.setShotParameter(manualShot);
             case SHOOT_STAGING:
                 stopShooting();
@@ -186,21 +209,29 @@ public class Superstructure extends SubsystemBase {
     public void periodic() {
         updateState();
         Pose2d dtPose = drivetrain.getPose();
-//        Pose2d shooterPose = dtPose.plus(new Transform2d(new Pose2d(), shooterOffset.rotate(dtPose.getRotation()))); //this one is so clean and good
-        Pose2d shooterPose = dtPose.plus(
-                new Transform2d(
-                        shooterOffset.rotateBy(dtPose.getRotation()),
-                        new Rotation2d()));
 
-        Pose2d targetPose = (this.allianceColor == AllianceColor.BLUE) ? kBlueTargetPose : kRedTargetPose;
+        Rotation2d dtRotation = dtPose.getRotation();
+//        Pose2d shooterPose = dtPose.plus(new Transform2d(new Pose2d(), shooterOffset.rotate(dtPose.getRotation()))); //this one is so clean and good
+        Pose2d shooterPose = new Pose2d(
+                dtPose.getX() + dtRotation.getCos() * shooterOffset.getX() - dtRotation.getSin() * shooterOffset.getY(),
+                dtPose.getY() + dtRotation.getSin() * shooterOffset.getX() + dtRotation.getCos() * shooterOffset.getY(),
+                new Rotation2d()
+        );
+
+        Rotation2d shooterToTargetAngle = new Rotation2d(
+                Math.atan2(
+                        targetPose.getY() - shooterPose.getY(),
+                        targetPose.getX() - shooterPose.getX()
+                )
+        ).minus(dtRotation);
 
         double distanceToTarget = shooterPose.minus(targetPose).getTranslation().getNorm();
 
         ShotParameter targetShot = InterpolatingTable.get(distanceToTarget);
 
         switch (state) {
-//            case REVERSE:
-//                break;
+            case REVERSE:
+                break;
             // if we dont want hood n shooter moving when reversing
             case IDLE:
                 break;
@@ -212,32 +243,38 @@ public class Superstructure extends SubsystemBase {
             case SHOOTING:
             case SHOOT_STAGING:
                 shooter.setShooterSpeed(targetShot.getRPM());
-            case REVERSE:
             case TRACKING:
                 shooter.setHoodAngle(
                         targetShot.getHoodAngle()
                 );
-
+            case TUNING_SHOOTING:
+            case TUNING_SHOOT_STAGING:
                 turret.setTurretAngle(
-                        Algorithms.angleOf(
-                        shooterPose
-                                .relativeTo(targetPose)
-                                .getTranslation())
-                                .minus(dtPose.getRotation())
+                        shooterToTargetAngle
                 );
                 break;
 
         }
 
+//        telemetry.addLine("Seed pose | x: " + seedPose.getX() + " | y: " + seedPose.getY() + " | theta: " + seedPose.getRotation().getDegrees());
+
         telemetry.addData("Robot state: ", state);
         telemetry.addData("Distance to target: ", distanceToTarget);
         telemetry.addData("Auto aim target angle: ", targetShot.getHoodAngle().getDegrees());
         telemetry.addData("Auto aim target rpm: ", targetShot.getRPM());
-        telemetry.addData("Timer time: ", timer.time(TimeUnit.MILLISECONDS));
+//        telemetry.addData("Timer time: ", timer.time(TimeUnit.MILLISECONDS));
+//        telemetry.addLine("Shooter to target: x: " + (targetPose.getX() - shooterPose.getX()) + " y: " + (targetPose.getY() - shooterPose.getY()));
+
+        telemetry.addLine("Shooter pose: x: " + shooterPose.getX() + " | y: " + shooterPose.getY());
     }
 
     private void updateState() {
         switch (state) {
+            case TUNING_SHOOT_STAGING:
+                if (this.atTargets()) {
+                    this.startShooting();
+                    state = RobotState.TUNING_SHOOTING;
+                }
             case MANUAL_STAGING:
                 if (this.atTargets()) {
                     this.startShooting();
@@ -268,7 +305,7 @@ public class Superstructure extends SubsystemBase {
 
     public boolean atTargets() {
 //        return shooter.atShooterSpeed() && shooter.atHoodAngle() && turret.atTurretAngle();
-        return timer.time(TimeUnit.MILLISECONDS) > msShootWaitTime;
+        return timer.time(TimeUnit.MILLISECONDS) > msShootWaitTime && shooter.atShooterSpeed();
     }
 
     public void startIntake() {
@@ -291,17 +328,31 @@ public class Superstructure extends SubsystemBase {
     }
 
     public void resetOdometry() {
-        drivetrain.setPose(
-                allianceColor == AllianceColor.BLUE ? kBlueSeedPose : kRedSeedPose
-        );
+//        drivetrain.setPose(
+//                allianceColor == AllianceColor.BLUE ? kBlueSeedPose : kRedSeedPose
+//        );
+        drivetrain.setPose(seedPose);
     }
 
     public void setFenderShot() {
         this.setManualShot(new ShotParameter(fenderShotAngle, fenderShotRPM));
     }
 
+    public void setTuningShot() {
+        this.manualShot = new ShotParameter(fenderShotAngle, fenderShotRPM);
+        this.setState(RobotState.TUNING_SHOOT_STAGING);
+    }
+
     public double getTurretRotorPosition() {
         return this.turret.getTurretRotorPosition();
+    }
+
+    public void calibrateTurret() {
+        turret.recalibrateTurret();
+    }
+
+    public void setPose(Pose2d pose) {
+        drivetrain.setPose(pose);
     }
     //imma steal 3006 code
 }

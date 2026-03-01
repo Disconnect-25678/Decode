@@ -4,9 +4,11 @@ import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.SelectCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
+import com.seattlesolvers.solverslib.geometry.Pose2d;
 
 import org.firstinspires.ftc.teamcode.commands.FollowPathChainCommand;
 import org.firstinspires.ftc.teamcode.common.Paths;
@@ -16,10 +18,15 @@ import org.firstinspires.ftc.teamcode.common.util.CommandOpModeEx;
 import org.firstinspires.ftc.teamcode.subsystem.Superstructure;
 import org.firstinspires.ftc.teamcode.subsystem.drive.PedroDrivetrain;
 
-@Config
+import java.util.Map;
+
 @Disabled
-public abstract class AutoMain extends CommandOpModeEx {
-    public static long kShootTime = 3000;
+public class AutoMain extends CommandOpModeEx {
+    public static boolean hitGate = false;
+    public static double shootTime = 2000;
+    public static long kShootTime = 2000;
+
+    public static int waitTime = 575;
 
     public enum AutoStartPosition {
         GOAL,
@@ -45,9 +52,15 @@ public abstract class AutoMain extends CommandOpModeEx {
     public void initialize() {
         super.initialize();
 
+        kShootTime = (long) RobotMemory.shootWaitTime;
+
+        waitTime = RobotMemory.autoWaitTime;
+
+        hitGate = RobotMemory.autoHitGate;
+
         drivetrain = new PedroDrivetrain(hardwareMap);
 
-        paths = Paths.getPaths(drivetrain.follower, this.color);
+        paths = Paths.getPaths(drivetrain.follower, this.color, hitGate);
 
         if (startPosition == AutoStartPosition.GOAL)
             startingPath = Paths.getGoalStartingPath(drivetrain.follower, this.color);
@@ -71,6 +84,10 @@ public abstract class AutoMain extends CommandOpModeEx {
 
         drivetrain.follower.setPose(startingPath.firstPath().getPose(0));
 
+        int pathIndexOffset = 0;
+
+        if (hitGate) pathIndexOffset = 1;
+
         schedule(
                 new SequentialCommandGroup(
                         new SequentialCommandGroup(
@@ -80,6 +97,7 @@ public abstract class AutoMain extends CommandOpModeEx {
                                 new FollowPathChainCommand(startingPath, drivetrain)
                         ),
                         new SequentialCommandGroup(
+                                new WaitCommand(waitTime),
                                 new InstantCommand(() -> robot.setState(Superstructure.RobotState.SHOOT_STAGING), robot),
                                 new WaitCommand(kShootTime),
                                 new InstantCommand(() -> robot.setState(Superstructure.RobotState.TRACKING), robot),
@@ -87,36 +105,46 @@ public abstract class AutoMain extends CommandOpModeEx {
                         ),
                         new SequentialCommandGroup(
                                 new FollowPathChainCommand(paths[0], drivetrain),
-                                new FollowPathChainCommand(paths[1], drivetrain)
+                                new FollowPathChainCommand(paths[1], drivetrain),
+                                new SelectCommand(
+                                        Map.ofEntries(
+                                                Map.entry(true, new FollowPathChainCommand(paths[2], drivetrain)),
+                                                Map.entry(false, new InstantCommand())
+                                        ),
+                                        () -> hitGate
+                                )
                         ),
                         new SequentialCommandGroup(
+                                new WaitCommand(waitTime),
                                 new InstantCommand(() -> robot.setState(Superstructure.RobotState.SHOOT_STAGING), robot),
                                 new WaitCommand(kShootTime),
                                 new InstantCommand(() -> robot.setState(Superstructure.RobotState.TRACKING), robot),
                                 new InstantCommand(() -> robot.startIntake(), robot)
                         ),
                         new SequentialCommandGroup(
-                                new FollowPathChainCommand(paths[2], drivetrain),
-                                new FollowPathChainCommand(paths[3], drivetrain)
+                                new FollowPathChainCommand(paths[2 + pathIndexOffset], drivetrain),
+                                new FollowPathChainCommand(paths[3 + pathIndexOffset], drivetrain)
                         ),
                         new SequentialCommandGroup(
+                                new WaitCommand(waitTime),
                                 new InstantCommand(() -> robot.setState(Superstructure.RobotState.SHOOT_STAGING), robot),
                                 new WaitCommand(kShootTime),
                                 new InstantCommand(() -> robot.setState(Superstructure.RobotState.TRACKING), robot),
                                 new InstantCommand(() -> robot.startIntake(), robot)
                         ),
                         new SequentialCommandGroup(
-                                new FollowPathChainCommand(paths[4], drivetrain),
-                                new FollowPathChainCommand(paths[5], drivetrain)
+                                new FollowPathChainCommand(paths[4 + pathIndexOffset], drivetrain),
+                                new FollowPathChainCommand(paths[5 + pathIndexOffset], drivetrain)
                         ),
                         new SequentialCommandGroup(
+                                new WaitCommand(waitTime),
                                 new InstantCommand(() -> robot.setState(Superstructure.RobotState.SHOOT_STAGING), robot),
                                 new WaitCommand(kShootTime),
                                 new InstantCommand(() -> robot.setState(Superstructure.RobotState.TRACKING), robot),
                                 new InstantCommand(() -> robot.stopIntake(), robot)
                         ),
                         new SequentialCommandGroup(
-                                new FollowPathChainCommand(paths[6], drivetrain)
+                                new FollowPathChainCommand(paths[6 + pathIndexOffset], drivetrain)
                         )
                 )
         );
@@ -129,7 +157,7 @@ public abstract class AutoMain extends CommandOpModeEx {
 
     @Override
     public void end() {
-        RobotMemory.pose = drivetrain.getPose();
+        RobotMemory.pose = new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation());
         RobotMemory.turretPosition = robot.getTurretRotorPosition();
         this.robot = null;
         Superstructure.instance = null;

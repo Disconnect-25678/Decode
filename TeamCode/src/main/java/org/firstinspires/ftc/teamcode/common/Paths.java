@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -9,18 +10,28 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.subsystem.Superstructure;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
+@Config
 public class Paths {
     public static PathChain GoalStartingPath;
 
+    public static Pose startingGoalPose = new Pose(24 - 3.795, 120);
+
+    public static Pose[] goalLeaveAutoPoses = {
+            startingGoalPose,
+            new Pose(46, 126)
+    };
+
     public static Pose[] wingStartingPoses = {
-            new Pose(60.000, 12.000),
+            new Pose(60.000, 7.809055 + 1.25),
             new Pose(60.000, 84.000)
     };
 
     public static Pose[] goalStartingPoses = {
-            new Pose(24.000, 120.000),
-
+//            new Pose(24.000, 120.000),
+//            new Pose(Superstructure.kBlueSeedPose.getX(), Superstructure.kBlueSeedPose.getY()),
+            startingGoalPose,
             new Pose(60.000, 84.000)
     };
 
@@ -32,13 +43,28 @@ public class Paths {
     public static PathChain Path6;
     public static PathChain Path7;
 
+    public static double ClassifierX = 17.5;
+    public static double EndX = 29;
+
     public static Pose[] path1Poses = {
             new Pose(60.000, 84.000),
 
-            new Pose(12.000, 84.000)
+            new Pose(ClassifierX, 84.000)
     };
+
+    public static Pose[] gatePathPoses = {
+            new Pose(ClassifierX, 84),
+            new Pose(30.147, 77.916),
+            new Pose(ClassifierX, 73.000)
+    };
+
+    public static Pose[] gateReturnPoses = {
+            new Pose(ClassifierX, 73),
+            new Pose(60, 84)
+    };
+
     public static Pose[] path2Poses = {
-            new Pose(12.000, 84.000),
+            new Pose(ClassifierX, 84),
 
             new Pose(60.000, 84.000)
     };
@@ -72,7 +98,7 @@ public class Paths {
     public static Pose[] path7Poses = {
             new Pose(60.000, 84.000),
 
-            new Pose(20.000, 74.000)
+            new Pose(EndX, 74.000)
     };
 
     public static Pose[][] pathPoses = {path1Poses, path2Poses, path3Poses, path4Poses, path5Poses, path6Poses, path7Poses};
@@ -222,10 +248,14 @@ public class Paths {
     }
 
     public static PathChain[] getPaths(Follower follower, Superstructure.AllianceColor color) {
+        return getPaths(follower, color, false);
+    }
+
+    public static PathChain[] getPaths(Follower follower, Superstructure.AllianceColor color, boolean hitGate) {
         ArrayList<ArrayList<Pose>> points = new ArrayList<>();
         for (int i = 0; i < pathPoses.length; i++) {
             ArrayList<Pose> localPathPoses = new ArrayList<>();
-            for (int j = 0; j < pathPoses[i].length; i++) {
+            for (int j = 0; j < pathPoses[i].length; j++) {
                 localPathPoses.add(
                         color == Superstructure.AllianceColor.RED ?
                                 pathPoses[i][j].mirror() :
@@ -235,25 +265,91 @@ public class Paths {
             points.add(localPathPoses);
         }
 
+        ArrayList<Pose> gatePoses = new ArrayList<>();
+
+        for (int i = 0; i < gatePathPoses.length; i++) {
+            if (color == Superstructure.AllianceColor.RED)
+                gatePoses.add(gatePathPoses[i].mirror());
+            gatePoses.add(gatePathPoses[i]);
+        }
+
+        ArrayList<Pose> gateBackPoses = new ArrayList<>();
+
+        for (int i = 0; i < gateReturnPoses.length; i++) {
+            if (color == Superstructure.AllianceColor.RED)
+                gateBackPoses.add(gateReturnPoses[i].mirror());
+            gateBackPoses.add(gateReturnPoses[i]);
+        }
+
         PathChain[] paths = new PathChain[points.size()];
 
         double headingOffset = color == Superstructure.AllianceColor.RED ? 180 : 0;
 
         for (int i = 0; i < paths.length; i++) {
-            paths[i] = follower.pathBuilder().addPath(
-                        points.get(i).size() > 2 ?
-                                new BezierCurve(
-                                        points.get(i)
-                                ) :
+            if (i == 1 && hitGate) {
+                paths[i] = follower.pathBuilder().addPath(
                                 new BezierLine(
-                                        points.get(i).get(0),
-                                        points.get(i).get(1)
+                                        gateBackPoses.get(0),
+                                        gateBackPoses.get(1)
                                 )
-                ).setLinearHeadingInterpolation(Math.toRadians(0 + headingOffset), Math.toRadians(0 + headingOffset))
-                .build();
+                        ).setLinearHeadingInterpolation(Math.toRadians(0 + headingOffset), Math.toRadians(0 + headingOffset))
+                        .build();
+            } else {
+                paths[i] = follower.pathBuilder().addPath(
+                                points.get(i).size() > 2 ?
+                                        new BezierCurve(
+                                                points.get(i)
+                                        ) :
+                                        new BezierLine(
+                                                points.get(i).get(0),
+                                                points.get(i).get(1)
+                                        )
+                        ).setLinearHeadingInterpolation(Math.toRadians(0 + headingOffset), Math.toRadians(0 + headingOffset))
+                        .build();
+            }
         }
 
-        return paths;
+        if (!hitGate) return paths;
+
+        ArrayList<PathChain> p = new ArrayList<>();
+
+        for (int i = 0; i < paths.length; i++) {
+            p.add(paths[i]);
+        }
+
+        if (hitGate) {
+            PathChain gatePath = follower.pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    gatePoses
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(0 + headingOffset), Math.toRadians(0 + headingOffset))
+                    .build();
+
+            p.add(1, gatePath);
+        }
+
+        PathChain[] realPaths = new PathChain[p.size()];
+
+        for (int i = 0; i < realPaths.length; i++) {
+            realPaths[i] = p.get(i);
+        }
+
+        return realPaths;
+    }
+
+    public static PathChain hitGaitPathchain(Follower follower) {
+        return follower.pathBuilder().addPath(
+                new BezierLine(
+                        path1Poses[0],
+                        path1Poses[1]
+                )
+        ).addPath(
+                new BezierCurve(
+                        Arrays.asList(gatePathPoses)
+                )
+        ).setLinearHeadingInterpolation(0, 0)
+                .build();
     }
 
     public static PathChain getGoalStartingPath(Follower follower, Superstructure.AllianceColor color) {
@@ -276,6 +372,19 @@ public class Paths {
                         new BezierLine(
                                 color == Superstructure.AllianceColor.RED ? wingStartingPoses[0].mirror() : wingStartingPoses[0],
                                 color == Superstructure.AllianceColor.RED ? wingStartingPoses[1].mirror() : wingStartingPoses[1]
+                        )
+                ).setLinearHeadingInterpolation(
+                        Math.toRadians(color == Superstructure.AllianceColor.RED ? 180 : 0),
+                        Math.toRadians(color == Superstructure.AllianceColor.RED ? 180 : 0))
+
+                .build();
+    }
+
+    public static PathChain getLeaveAutoPath(Follower follower, Superstructure.AllianceColor color) {
+        return follower.pathBuilder().addPath(
+                        new BezierLine(
+                                color == Superstructure.AllianceColor.RED ? goalLeaveAutoPoses[0].mirror() : goalLeaveAutoPoses[0],
+                                color == Superstructure.AllianceColor.RED ? goalLeaveAutoPoses[1].mirror() : goalLeaveAutoPoses[1]
                         )
                 ).setLinearHeadingInterpolation(
                         Math.toRadians(color == Superstructure.AllianceColor.RED ? 180 : 0),

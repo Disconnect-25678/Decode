@@ -38,7 +38,7 @@ public class HardwareTurret extends OpMode {
         gamepadEx.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
                 .whenActive(this::setTurretPosA);
 
-        gamepadEx.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
+        gamepadEx.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
                 .whenActive(this::setTurretPosB);
     }
 

@@ -17,17 +17,49 @@ public class InterpolatingTable {
             new TreeMap<>(
                     Map.ofEntries(
                             entry(
-                                    Double.valueOf(2),
-                                    new ShotParameter(10, 4500)),
+                                    Double.valueOf(42.63879765177995),
+                                    new ShotParameter(16, 4000)),
                             entry(
-                                    Double.valueOf(100),
-                                    new ShotParameter(20, 4500)),
+                                    Double.valueOf(50.80696943477022),
+                                    new ShotParameter(17.5, 4300)
+                            ),
                             entry(
-                                    Double.valueOf(150),
-                                    new ShotParameter(32, 4500)),
+                                    Double.valueOf(71.60300367997554),
+                                    new ShotParameter(22, 4350)
+                            ),
+//                            entry(
+//                                    Double.valueOf(72.0233951970043),
+//                                    new ShotParameter(33, 4900)
+//                            ),
                             entry(
-                                    Double.valueOf(200),
-                                    new ShotParameter(45, 4500))
+                                    Double.valueOf(80.4723339717294),
+                                    new ShotParameter(25, 4600)
+                            ),
+                            entry(
+                                    Double.valueOf(84.6669275974),
+                                    new ShotParameter(25, 4600)
+                            ),
+                            entry(
+                                    Double.valueOf(96.39638920286106),
+                                    new ShotParameter(26, 4800)
+                            ),
+                            entry(
+                                    Double.valueOf(100.7779904061193),
+                                    new ShotParameter(25, 4800)
+                            ),
+                            entry(
+                                    Double.valueOf(107.90704069273725),
+                                    new ShotParameter(26, 5000)
+                            )
+//                            entry(
+//                                    Double.valueOf(Math.hypot(60, 60)),
+//                                    new ShotParameter(35, 5500))
+//                            entry(
+//                                    Double.valueOf(150),
+//                                    new ShotParameter(32, 6000)),
+//                            entry(
+//                                    Double.valueOf(200),
+//                                    new ShotParameter(45, 6000))
                     ));
 
     public static ShotParameter get(double distanceToTarget) {

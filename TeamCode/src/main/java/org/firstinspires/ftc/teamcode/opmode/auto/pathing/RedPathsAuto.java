@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmode.auto.pathing;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
@@ -11,10 +10,8 @@ import org.firstinspires.ftc.teamcode.common.util.CommandOpModeEx;
 import org.firstinspires.ftc.teamcode.subsystem.Superstructure;
 import org.firstinspires.ftc.teamcode.subsystem.drive.PedroDrivetrain;
 
-@Config
 @Autonomous(group = "Paths")
-public class BluePathsAuto extends CommandOpModeEx {
-    public static boolean HitGate = true;
+public class RedPathsAuto extends CommandOpModeEx {
     private PedroDrivetrain drivetrain;
 
     @Override
@@ -23,7 +20,7 @@ public class BluePathsAuto extends CommandOpModeEx {
 
         drivetrain = new PedroDrivetrain(hardwareMap);
 
-        PathChain[] paths = Paths.getPaths(drivetrain.follower, Superstructure.AllianceColor.BLUE, HitGate);
+        PathChain[] paths = Paths.getPaths(drivetrain.follower, Superstructure.AllianceColor.RED, true);
 
         drivetrain.follower.setPose(paths[0].firstPath().getPose(0));
 
@@ -36,28 +33,7 @@ public class BluePathsAuto extends CommandOpModeEx {
                         new FollowPathChainCommand(paths[4], drivetrain),
                         new FollowPathChainCommand(paths[5], drivetrain),
                         new FollowPathChainCommand(paths[6], drivetrain)
-                        )
+                )
         );
-    }
-
-    @Override
-    public void initialize_loop() {
-        telemetry.addLine(
-                "Pose: " + drivetrain.getPose().getX() + ", " +
-                        drivetrain.getPose().getY() + ", "
-                        + drivetrain.getPose().getRotation().getDegrees()
-        );
-        telemetry.update();
-    }
-
-    @Override
-    public void run() {
-        super.run();
-    }
-
-    @Override
-    public void end() {
-        drivetrain = null;
-        Paths.pathArray = null;
     }
 }

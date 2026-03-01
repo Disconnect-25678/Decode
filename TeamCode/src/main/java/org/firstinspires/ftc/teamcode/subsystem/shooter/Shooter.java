@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.common.util.MotorWrapper;
 
 @Config
 public class Shooter extends SubsystemBase {
-    public static double kP = 0;
+    public static double kP = 0.02;
     public static double kI = 0;
     public static double kD = 0;
 
@@ -22,7 +22,7 @@ public class Shooter extends SubsystemBase {
     public static double sMaxRPM = 6000;
     public static double sReverseRPM = -900;
 
-    public static double sShooterTolerance = 30;
+    public static double sShooterTolerance = 125;
 
     public static Rotation2d maxAngle = Rotation2d.fromDegrees(45);
     public static Rotation2d minAngle = Rotation2d.fromDegrees(10);
@@ -79,7 +79,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean atShooterSpeed() {
-        return true;
+        return this.atShooterTarget;
     }
 
     public boolean atHoodAngle() {
@@ -102,19 +102,23 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         this.velocityController.setPID(kP, kI, kD);
 
-        double shooterVeloRPS = (this.shooterMotors[0].motor.getVelocity(AngleUnit.DEGREES)) / 360;
+        double shooterVeloRPS = (this.shooterMotors[0].motor.getVelocity() / 28);
+
+        double power = 0;
 
         if (Double.compare(0, rpmTarget) != 0) {
             double ff = this.rpmTarget / sMaxRPM;
 
-
-            this.setShooterDutyCycle(kF * ff + velocityController.calculate(rpmTarget / 60, shooterVeloRPS));
+            power = kF * ff + velocityController.calculate(shooterVeloRPS, rpmTarget / 60);
+            this.setShooterDutyCycle(power);
 
             this.atShooterTarget = Math.abs(shooterVeloRPS * 60 - rpmTarget) < sShooterTolerance;
         } else {
             this.setShooterDutyCycle(0);
+            this.atShooterTarget = true;
         }
 
+        telemetry.addData("Shooter power: ", power);
         telemetry.addData("Shooter rpm: ", shooterVeloRPS * 60);
         telemetry.addData("Shooter at target: ", this.atShooterTarget);
         telemetry.addData("Shooter target velo: ", this.rpmTarget);

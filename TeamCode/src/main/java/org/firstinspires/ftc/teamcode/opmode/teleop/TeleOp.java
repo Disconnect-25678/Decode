@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.common.RobotHardware;
+import org.firstinspires.ftc.teamcode.common.RobotMemory;
 import org.firstinspires.ftc.teamcode.common.util.CommandOpModeEx;
 import org.firstinspires.ftc.teamcode.subsystem.Superstructure;
+
+import java.util.concurrent.TimeUnit;
 
 abstract public class TeleOp extends CommandOpModeEx {
     public static double kTriggerThreshold = 0.1;
@@ -19,6 +23,10 @@ abstract public class TeleOp extends CommandOpModeEx {
     public TeleOp(Superstructure.AllianceColor color) {
         this.color = color;
     }
+
+    private boolean setPose = false;
+
+    private ElapsedTime timer = new ElapsedTime();
 
     @Override
     public void initialize() {
@@ -33,6 +41,8 @@ abstract public class TeleOp extends CommandOpModeEx {
         Superstructure.instance = new Superstructure(hardwareMap, telemetry, joystick, color);
 
         robot = Superstructure.instance;
+
+        setPose = false;
 
 
         new Trigger(() -> joystick.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > kTriggerThreshold)
@@ -62,11 +72,28 @@ abstract public class TeleOp extends CommandOpModeEx {
         joystick.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
                 .whenPressed(robot::setFenderShot)
                 .whenReleased(() -> robot.setState(Superstructure.RobotState.IDLE));
+
+        joystick.getGamepadButton(GamepadKeys.Button.DPAD_UP)
+                .whenPressed(robot::calibrateTurret);
+
+        joystick.getGamepadButton(GamepadKeys.Button.DPAD_LEFT)
+                .whenPressed(robot::setTuningShot)
+                .whenReleased(() -> robot.setState(Superstructure.RobotState.TRACKING));
+
+        timer.reset();
     }
 
     @Override
     public void initialize_loop() {
-        telemetry.addLine("Ready");
+        if (RobotMemory.pose != null) telemetry.addLine("Memor pose | x: " + RobotMemory.pose.getX() + " | y: " + RobotMemory.pose.getY() + " | heading: " + RobotMemory.pose.getRotation().getDegrees());
+        if (timer.time(TimeUnit.MILLISECONDS) > 2000) {
+            if (RobotMemory.pose != null && !setPose) {
+                robot.setPose(RobotMemory.pose);
+                setPose = true;
+            }
+            telemetry.addLine("Ready");
+        }
+        telemetry.addData("updated pose: ", setPose);
         telemetry.update();
     }
 

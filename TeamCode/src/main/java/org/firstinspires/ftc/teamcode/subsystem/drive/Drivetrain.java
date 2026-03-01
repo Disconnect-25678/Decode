@@ -23,7 +23,7 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
     public static double kDrivingDeadband = 0.05;
 
     public static double kMaxDriveSpeed = 0.96;
-    public static double kMaxRotationSpeed = 0.5;
+    public static double kMaxRotationSpeed = 0.79;
 
     public static double kP = 0.0175;
     public static double kI = 0;
@@ -66,7 +66,10 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
         this.motors = motors;
         this.odometry = odo;
         this.withAllianceColor(color);
-        if (color == Superstructure.AllianceColor.BLUE) headingOffset = Rotation2d.fromDegrees(180);
+        if (color == Superstructure.AllianceColor.BLUE) {
+            headingOffset = Rotation2d.fromDegrees(180);
+            targetHeading = Rotation2d.fromDegrees(180);
+        }
     }
 
     public Drivetrain withAllianceColor(Superstructure.AllianceColor color) {
@@ -105,8 +108,10 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
 
     public void setPose(Pose2d pose) {
         odometry.setPosition(new Pose2D(DistanceUnit.INCH, pose.getX(), pose.getY(), AngleUnit.DEGREES, pose.getRotation().getDegrees()));
+        headingOffset = (allianceColor == Superstructure.AllianceColor.BLUE) ? Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0);
         heading = pose.getRotation();
-        headingOffset = (allianceColor == Superstructure.AllianceColor.BLUE) ? headingOffset = Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0);
+        if (allianceColor == Superstructure.AllianceColor.BLUE) heading = pose.getRotation().plus(Rotation2d.fromDegrees(180));
+        targetHeading = Rotation2d.fromDegrees(heading.getDegrees());
     }
 
     public Pose2d getPose() {
@@ -114,8 +119,13 @@ public class Drivetrain extends SubsystemBase implements DrivetrainIO{
     }
 
     private double calculateHeadingPID() {
-        double error = (targetHeading.getDegrees() - heading.getDegrees() + 180) % 360 - 180;
-        return headingPIDController.calculate(targetHeading.getDegrees() - error, targetHeading.getDegrees());
+        double target = (targetHeading.getDegrees() + 360) % 360;
+        double robotHeading = (heading.getDegrees() + 360) % 360;
+        double error = target - robotHeading;
+        if (error < -180) error += 360;
+        else if (error > 180) error -= 360;
+        telemetry.addData("Drivetrain error: ", error);
+        return headingPIDController.calculate(target - error, target);
     }
 
     private void setMecanumValues(double[] vals) {
