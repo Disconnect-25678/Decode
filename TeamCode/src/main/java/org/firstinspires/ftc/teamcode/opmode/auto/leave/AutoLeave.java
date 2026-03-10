@@ -99,8 +99,8 @@ public class AutoLeave extends CommandOpModeEx {
 
     @Override
     public void end() {
-        RobotMemory.pose = new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation());
-        RobotMemory.turretPosition = robot.getTurretRotorPosition();
+//        RobotMemory.pose = new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation());
+//        RobotMemory.turretPosition = robot.getTurretRotorPosition();
         this.robot = null;
         Superstructure.instance = null;
         RobotHardware.kill();

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -11,7 +12,9 @@ import com.seattlesolvers.solverslib.geometry.Transform2d;
 import com.seattlesolvers.solverslib.geometry.Translation2d;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.common.Paths;
 import org.firstinspires.ftc.teamcode.common.RobotHardware;
+import org.firstinspires.ftc.teamcode.common.RobotMemory;
 import org.firstinspires.ftc.teamcode.common.util.Algorithms;
 import org.firstinspires.ftc.teamcode.subsystem.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystem.drive.DrivetrainIO;
@@ -24,16 +27,21 @@ import java.util.concurrent.TimeUnit;
 
 @Config
 public class Superstructure extends SubsystemBase {
+    public static final double seedXOffset = 0;
     public static Superstructure instance = null;
+
+    public static boolean alternateBlueTarget = false;
 
     public static final Translation2d shooterOffset = new Translation2d(1.794, 0);
 
     public static final Pose2d kBlueTargetPose = new Pose2d(0, 144, new Rotation2d());
     public static final Pose2d kRedTargetPose = new Pose2d(144, 141.5, new Rotation2d());
 
+    public static final Pose2d kAlternateBlueTargetPose = new Pose2d(0, 141.5, new Rotation2d());
+
     public Pose2d targetPose;
 
-    public static final Pose2d kSeedPose = new Pose2d(9.96319, 7.809055 + 1.25, new Rotation2d());
+    public static final Pose2d kSeedPose = new Pose2d(9.96319, 7.809055 + seedXOffset, new Rotation2d());
 
     public static final Pose2d kRedSeedPose = kSeedPose;
     public static final Pose2d kBlueSeedPose = new Pose2d(141.5 - kSeedPose.getX(), kSeedPose.getY(), Rotation2d.fromDegrees(180));
@@ -48,8 +56,14 @@ public class Superstructure extends SubsystemBase {
     public static int msShootWaitTime = 300;
     public static int msPulseTime = 100;
 
+    public static double kTurretOffset = 2;
+
     private ElapsedTime timer = new ElapsedTime();
     private Pose2d seedPose = null;
+
+    private Pose2d tuningSeedPose = null;
+
+    private double turretOffset = 0;
 
     public enum RobotState {
         TRACKING, // hood tracking, turret tracking
@@ -128,13 +142,21 @@ public class Superstructure extends SubsystemBase {
                 this.telemetry
         );
 
+        Pose pose = Paths.startingGoalPose;
+        Pose poseMirror = Paths.startingGoalPose.mirror();
+
         if (allianceColor == AllianceColor.RED) {
             targetPose = kRedTargetPose;
             seedPose = kRedSeedPose;
+            tuningSeedPose = new Pose2d(poseMirror.getX(), poseMirror.getY(), Rotation2d.fromDegrees(180));
+            turretOffset = kTurretOffset;
         }
         else {
-            targetPose = kBlueTargetPose;
+            if (alternateBlueTarget) targetPose = kAlternateBlueTargetPose;
+            else targetPose = kBlueTargetPose;
             seedPose = kBlueSeedPose;
+            tuningSeedPose = new Pose2d(pose.getX(), pose.getY(), Rotation2d.fromDegrees(0));
+            turretOffset = 0;
         }
     }
 
@@ -210,6 +232,8 @@ public class Superstructure extends SubsystemBase {
         updateState();
         Pose2d dtPose = drivetrain.getPose();
 
+        RobotMemory.getInstance().setPose2d(dtPose);
+
         Rotation2d dtRotation = dtPose.getRotation();
 //        Pose2d shooterPose = dtPose.plus(new Transform2d(new Pose2d(), shooterOffset.rotate(dtPose.getRotation()))); //this one is so clean and good
         Pose2d shooterPose = new Pose2d(
@@ -222,12 +246,16 @@ public class Superstructure extends SubsystemBase {
                 Math.atan2(
                         targetPose.getY() - shooterPose.getY(),
                         targetPose.getX() - shooterPose.getX()
-                )
+                ) - Math.toRadians(turretOffset)
         ).minus(dtRotation);
 
         double distanceToTarget = shooterPose.minus(targetPose).getTranslation().getNorm();
 
         ShotParameter targetShot = InterpolatingTable.get(distanceToTarget);
+
+//        if (allianceColor == AllianceColor.RED) {
+//            shooterToTargetAngle = shooterToTargetAngle.minus(Rotation2d.fromDegrees(kTurretOffset));
+//        }
 
         switch (state) {
             case REVERSE:
@@ -264,8 +292,10 @@ public class Superstructure extends SubsystemBase {
         telemetry.addData("Auto aim target rpm: ", targetShot.getRPM());
 //        telemetry.addData("Timer time: ", timer.time(TimeUnit.MILLISECONDS));
 //        telemetry.addLine("Shooter to target: x: " + (targetPose.getX() - shooterPose.getX()) + " y: " + (targetPose.getY() - shooterPose.getY()));
+        telemetry.addData("Shooter to target angle: ", shooterToTargetAngle.getDegrees());
 
         telemetry.addLine("Shooter pose: x: " + shooterPose.getX() + " | y: " + shooterPose.getY());
+        telemetry.addData("Shooter offset: ", turretOffset);
     }
 
     private void updateState() {
@@ -353,6 +383,10 @@ public class Superstructure extends SubsystemBase {
 
     public void setPose(Pose2d pose) {
         drivetrain.setPose(pose);
+    }
+
+    public void tuningResetPose() {
+        drivetrain.setPose(tuningSeedPose);
     }
     //imma steal 3006 code
 }

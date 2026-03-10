@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.geometry.Pose2d;
 
 import org.firstinspires.ftc.teamcode.common.RobotHardware;
 import org.firstinspires.ftc.teamcode.common.RobotMemory;
@@ -80,15 +81,19 @@ abstract public class TeleOp extends CommandOpModeEx {
                 .whenPressed(robot::setTuningShot)
                 .whenReleased(() -> robot.setState(Superstructure.RobotState.TRACKING));
 
+        joystick.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT)
+                .whenPressed(robot::tuningResetPose);
+
         timer.reset();
     }
 
     @Override
     public void initialize_loop() {
-        if (RobotMemory.pose != null) telemetry.addLine("Memor pose | x: " + RobotMemory.pose.getX() + " | y: " + RobotMemory.pose.getY() + " | heading: " + RobotMemory.pose.getRotation().getDegrees());
+        Pose2d robotPose = RobotMemory.getInstance().getPose();
+        if (robotPose != null) telemetry.addLine("Memor pose | x: " + robotPose.getX() + " | y: " + robotPose.getY() + " | heading: " + robotPose.getRotation().getDegrees());
         if (timer.time(TimeUnit.MILLISECONDS) > 2000) {
-            if (RobotMemory.pose != null && !setPose) {
-                robot.setPose(RobotMemory.pose);
+            if (robotPose != null && !setPose) {
+                robot.setPose(robotPose);
                 setPose = true;
             }
             telemetry.addLine("Ready");

@@ -7,7 +7,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 @Config
 public class Index extends SubsystemBase {
-    public static double kIndexShootSpeed = 0.9;
+    public static double kIndexShootSpeed = 0.82;
     public static double kReverseSpeed = -0.4;
     public static double kPulseSpeed = 0.8;
 

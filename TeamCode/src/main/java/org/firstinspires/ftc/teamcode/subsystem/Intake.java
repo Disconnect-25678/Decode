@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.common.util.MotorWrapper;
 
 @Config
 public class Intake extends SubsystemBase {
-    public static double kIntakeSpeed = 0.9;
+    public static double kIntakeSpeed = 0.99;
     public static double kIdleSpeed = 0.7;
     public static double kReverseSpeed = 0.5;
 

@@ -137,6 +137,8 @@ public class Turret extends SubsystemBase {
 
         relativeAngle = positionToAngle(motorPosition);
 
+        RobotMemory.turretPosition = this.motorPosition;
+
         telemetry.addData("Turret target relative angle: ", this.targetRelativeAngle);
         telemetry.addData("Turret motor pos: ", this.motorPosition);
         telemetry.addData("Turret target angle: ", targetAngle.getDegrees());

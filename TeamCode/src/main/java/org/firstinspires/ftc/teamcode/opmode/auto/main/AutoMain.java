@@ -28,6 +28,8 @@ public class AutoMain extends CommandOpModeEx {
 
     public static int waitTime = 575;
 
+    public static int gateWaitTime = 500;
+
     public enum AutoStartPosition {
         GOAL,
         WING
@@ -57,6 +59,8 @@ public class AutoMain extends CommandOpModeEx {
         waitTime = RobotMemory.autoWaitTime;
 
         hitGate = RobotMemory.autoHitGate;
+
+        gateWaitTime = RobotMemory.gaitWaitTime;
 
         drivetrain = new PedroDrivetrain(hardwareMap);
 
@@ -105,10 +109,27 @@ public class AutoMain extends CommandOpModeEx {
                         ),
                         new SequentialCommandGroup(
                                 new FollowPathChainCommand(paths[0], drivetrain),
+                                new SelectCommand(
+                                        Map.ofEntries(
+                                                Map.entry(
+                                                        true,
+                                                        new InstantCommand(robot::stopIntake, robot)
+                                                ),
+                                                Map.entry(
+                                                        false,
+                                                        new InstantCommand()
+                                                )
+                                        ),
+                                        () -> hitGate
+                                ),
                                 new FollowPathChainCommand(paths[1], drivetrain),
                                 new SelectCommand(
                                         Map.ofEntries(
-                                                Map.entry(true, new FollowPathChainCommand(paths[2], drivetrain)),
+                                                Map.entry(true, new SequentialCommandGroup(
+                                                        new WaitCommand(gateWaitTime),
+                                                        new InstantCommand(robot::startIntake, robot),
+                                                        new FollowPathChainCommand(paths[2], drivetrain)
+                                                )),
                                                 Map.entry(false, new InstantCommand())
                                         ),
                                         () -> hitGate
@@ -157,8 +178,8 @@ public class AutoMain extends CommandOpModeEx {
 
     @Override
     public void end() {
-        RobotMemory.pose = new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation());
-        RobotMemory.turretPosition = robot.getTurretRotorPosition();
+//        RobotMemory.pose = new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation());
+//        RobotMemory.turretPosition = robot.getTurretRotorPosition();
         this.robot = null;
         Superstructure.instance = null;
         RobotHardware.kill();

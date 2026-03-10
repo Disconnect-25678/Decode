@@ -18,21 +18,23 @@ public class Paths {
 
     public static Pose startingGoalPose = new Pose(24 - 3.795, 120);
 
+    public static Pose scorePose = new Pose(48, 100);
+
     public static Pose[] goalLeaveAutoPoses = {
             startingGoalPose,
             new Pose(46, 126)
     };
 
     public static Pose[] wingStartingPoses = {
-            new Pose(60.000, 7.809055 + 1.25),
-            new Pose(60.000, 84.000)
+            new Pose(60.000, 7.809055 + Superstructure.seedXOffset),
+            scorePose
     };
 
     public static Pose[] goalStartingPoses = {
 //            new Pose(24.000, 120.000),
 //            new Pose(Superstructure.kBlueSeedPose.getX(), Superstructure.kBlueSeedPose.getY()),
             startingGoalPose,
-            new Pose(60.000, 84.000)
+            scorePose
     };
 
     public static PathChain Path1;
@@ -47,7 +49,9 @@ public class Paths {
     public static double EndX = 29;
 
     public static Pose[] path1Poses = {
-            new Pose(60.000, 84.000),
+            scorePose,
+            new Pose(49.166, 83.617),
+            new Pose(43.958, 83.822),
 
             new Pose(ClassifierX, 84.000)
     };
@@ -55,51 +59,109 @@ public class Paths {
     public static Pose[] gatePathPoses = {
             new Pose(ClassifierX, 84),
             new Pose(30.147, 77.916),
-            new Pose(ClassifierX, 73.000)
+            new Pose(ClassifierX + 0.4, 73.000)
     };
 
     public static Pose[] gateReturnPoses = {
-            new Pose(ClassifierX, 73),
-            new Pose(60, 84)
+            new Pose(ClassifierX + 0.4, 73),
+            scorePose
     };
 
     public static Pose[] path2Poses = {
             new Pose(ClassifierX, 84),
 
-            new Pose(60.000, 84.000)
+            scorePose
     };
 
     public static Pose[] path3Poses = {
-            new Pose(60.000, 84.000),
-            new Pose(60.270, 56.055),
-            new Pose(41.942, 60.291),
-            new Pose(12.000, 60.000)
+            scorePose,
+            new Pose(48.356, 55.614),
+            new Pose(47.650, 59.129),
+            new Pose(11.25, 59.000)
     };
 
     public static Pose[] path4Poses = {
-            new Pose(12.000, 60.000),
-            new Pose(40.825, 67.498),
-            new Pose(60.000, 84.000)
+            new Pose(11.25, 59.000),
+            new Pose(39.207, 75.381),
+            scorePose
     };
 
     public static Pose[] path5Poses = {
-            new Pose(60.000, 84.000),
-            new Pose(59.353, 30.971),
-            new Pose(55.733, 36.296),
-            new Pose(12.000, 36.000)
+            scorePose,
+            new Pose(47.026, 39.107),
+            new Pose(50.087, 35.877),
+            new Pose(37.156, 37.240),
+            new Pose(11.1, 37.000)
     };
 
     public static Pose[] path6Poses = {
-            new Pose(12.000, 36.000),
+            new Pose(11.1, 37),
 
-            new Pose(60.000, 84.000)
+            scorePose
     };
 
     public static Pose[] path7Poses = {
-            new Pose(60.000, 84.000),
+            scorePose,
 
             new Pose(EndX, 74.000)
     };
+
+    //old paths....
+
+//    public static Pose[] path1Poses = {
+//            scorePose,
+//
+//            new Pose(ClassifierX, 84.000)
+//    };
+//
+//    public static Pose[] gatePathPoses = {
+//            new Pose(ClassifierX, 84),
+//            new Pose(30.147, 77.916),
+//            new Pose(ClassifierX, 73.000)
+//    };
+//
+//    public static Pose[] gateReturnPoses = {
+//            new Pose(ClassifierX, 73),
+//            scorePose
+//    };
+//
+//    public static Pose[] path2Poses = {
+//            new Pose(ClassifierX, 84),
+//
+//            scorePose
+//    };
+//
+//    public static Pose[] path3Poses = {
+//            scorePose,
+//            new Pose(60.270, 56.055),
+//            new Pose(41.942, 60.291),
+//            new Pose(12.000, 60.000)
+//    };
+//
+//    public static Pose[] path4Poses = {
+//            new Pose(12.000, 60.000),
+//            new Pose(40.825, 67.498),
+//            scorePose
+//    };
+//
+//    public static Pose[] path5Poses = {
+//            scorePose,
+//            new Pose(59.353, 30.971),
+//            new Pose(55.733, 36.296),
+//            new Pose(12.000, 36.000)
+//    };
+//
+//    public static Pose[] path6Poses = {
+//            new Pose(12.000, 36.000),
+//
+//            scorePose
+//    };
+//
+//    public static Pose[] path7Poses = {
+//            scorePose,
+//
+//            new Pose(EndX, 74.000)
+//    };
 
     public static Pose[][] pathPoses = {path1Poses, path2Poses, path3Poses, path4Poses, path5Poses, path6Poses, path7Poses};
 
@@ -270,7 +332,7 @@ public class Paths {
         for (int i = 0; i < gatePathPoses.length; i++) {
             if (color == Superstructure.AllianceColor.RED)
                 gatePoses.add(gatePathPoses[i].mirror());
-            gatePoses.add(gatePathPoses[i]);
+            else gatePoses.add(gatePathPoses[i]);
         }
 
         ArrayList<Pose> gateBackPoses = new ArrayList<>();
@@ -278,7 +340,7 @@ public class Paths {
         for (int i = 0; i < gateReturnPoses.length; i++) {
             if (color == Superstructure.AllianceColor.RED)
                 gateBackPoses.add(gateReturnPoses[i].mirror());
-            gateBackPoses.add(gateReturnPoses[i]);
+            else gateBackPoses.add(gateReturnPoses[i]);
         }
 
         PathChain[] paths = new PathChain[points.size()];
